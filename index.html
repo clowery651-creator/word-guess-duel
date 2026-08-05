@@ -118,6 +118,7 @@
   </div>
 </div>
 
+<script src="logic.js"></script>
 <script>
 (function(){
   const WORDS = ["about","above","actor","acute","admit","adopt","after","again","agent","agree",
@@ -198,13 +199,6 @@
 
   let state = loadState();
 
-  function pickWordForDay(seedStr){
-    // simple deterministic hash -> index
-    let h = 0;
-    for(let i=0;i<seedStr.length;i++){ h = (h*31 + seedStr.charCodeAt(i)) >>> 0; }
-    return ANSWERS[h % ANSWERS.length];
-  }
-
   function todayKey(){ return new Date().toISOString().slice(0,10); }
 
   function ensureWord(forceNew){
@@ -216,7 +210,7 @@
       state.gameOver = false;
       state.won = false;
     } else if(state.currentDay !== day || !state.currentWord){
-      state.currentWord = pickWordForDay(day);
+      state.currentWord = pickWordForDay(day, ANSWERS);
       state.currentDay = day;
       state.guesses = [];
       state.gameOver = false;
@@ -303,21 +297,6 @@
     toastEl.textContent = msg;
     toastEl.classList.add('show');
     setTimeout(() => toastEl.classList.remove('show'), 1400);
-  }
-
-  function evaluateGuess(guess, answer){
-    const result = Array(COLS).fill('absent');
-    const answerArr = answer.split('');
-    const used = Array(COLS).fill(false);
-    for(let i=0;i<COLS;i++){
-      if(guess[i] === answerArr[i]){ result[i] = 'correct'; used[i] = true; }
-    }
-    for(let i=0;i<COLS;i++){
-      if(result[i] === 'correct') continue;
-      const idx = answerArr.findIndex((ch,j) => ch === guess[i] && !used[j]);
-      if(idx !== -1){ result[i] = 'present'; used[idx] = true; }
-    }
-    return result;
   }
 
   function applyRow(rowIdx, guess, result, animate){
